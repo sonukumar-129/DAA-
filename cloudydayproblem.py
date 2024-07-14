@@ -1,53 +1,45 @@
-import math
-import os
-import random
-import re
-import sys
-
-# Complete the maximumPeople function below.
 from collections import defaultdict
 
-
-def maximumPeople(towns, cloud_start, cloud_end):
+def maxPeople(towns, cloud_start, cloud_end):
     towns = sorted(towns)
     cloud_start = sorted(cloud_start)
     cloud_end = sorted(cloud_end)
 
-    cloud_start_i = 0
-    cloud_end_i = 0
-    clouds = set()
+    start_i = 0
+    end_i = 0
+    active_clouds = set()
 
-    d = defaultdict(int)
-    free = 0
+    cloud_coverage = defaultdict(int)
+    free_population = 0
     for town_i in range(len(towns)):
-        town_x = towns[town_i][0]
-        while cloud_start_i < len(cloud_start) and cloud_start[cloud_start_i][0] <= town_x:
-            clouds.add(cloud_start[cloud_start_i][1])
-            cloud_start_i += 1
-        while cloud_end_i < len(cloud_end) and cloud_end[cloud_end_i][0] < town_x:
-            clouds.remove(cloud_end[cloud_end_i][1])
-            cloud_end_i += 1
-        if len(clouds) == 1:
-            towns[town_i][2] = list(clouds)[0]
-            d[list(clouds)[0]] += towns[town_i][1]
-        elif len(clouds) == 0:
-            free += towns[town_i][1]
+        town_pos = towns[town_i][0]
+        while start_i < len(cloud_start) and cloud_start[start_i][0] <= town_pos:
+            active_clouds.add(cloud_start[start_i][1])
+            start_i += 1
+        while end_i < len(cloud_end) and cloud_end[end_i][0] < town_pos:
+            active_clouds.remove(cloud_end[end_i][1])
+            end_i += 1
+        if len(active_clouds) == 1:
+            towns[town_i][2] = list(active_clouds)[0]
+            cloud_coverage[list(active_clouds)[0]] += towns[town_i][1]
+        elif len(active_clouds) == 0:
+            free_population += towns[town_i][1]
 
-    return max(d.values(), default=0) + free
+    return max(cloud_coverage.values(), default=0) + free_population
 
+import sys
 
-def main():
-    n = int(input().strip())
-    p = [int(x) for x in input().strip().split()]
-    x = [int(x) for x in input().strip().split()]
-    towns = [[xi, pi, -1] for xi, pi in zip(x, p)]
-    m = int(input().strip())
-    y = [int(x) for x in input().strip().split()]
-    r = [int(x) for x in input().strip().split()]
-    cloud_start = [[y[i]-r[i], i] for i in range(m)]
-    cloud_end = [[y[i]+r[i], i] for i in range(m)]
-    result = maximumPeople(towns, cloud_start, cloud_end)
-    print(result)
+input = sys.stdin.read
+data = input().splitlines()
 
-if __name__ == "__main__":
-    main()
+num_towns = int(data[0].strip())
+populations = [int(x) for x in data[1].strip().split()]
+positions = [int(x) for x in data[2].strip().split()]
+towns = [[pos, pop, -1] for pos, pop in zip(positions, populations)]
+num_clouds = int(data[3].strip())
+cloud_positions = [int(x) for x in data[4].strip().split()]
+cloud_ranges = [int(x) for x in data[5].strip().split()]
+cloud_start = [[cloud_positions[i]-cloud_ranges[i], i] for i in range(num_clouds)]
+cloud_end = [[cloud_positions[i]+cloud_ranges[i], i] for i in range(num_clouds)]
+result = maxPeople(towns, cloud_start, cloud_end)
+print(result)
